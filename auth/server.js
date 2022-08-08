@@ -4,9 +4,11 @@ const bodyParser = require('body-parser');
 const cors = require('cors')
 
 const app = express();
+const userRoute = require('./routes/UserRoute');
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json());
+
 
 let corsOptions = {
     origin: 'http://localhost:4200',
@@ -16,6 +18,9 @@ let corsOptions = {
 app.get('/', function (req, res) {
     res.send('hello');
 })
+
+app.use(cors(corsOptions));
+app.use('/api/users', userRoute);
 
 
 const config = require('./DB');
