@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const env = require('.../DB')
+const jwt = require('jsonwebtoken')
 
 exports.register = function (req, res) {
     const {
