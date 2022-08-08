@@ -1,103 +1,73 @@
-const User = require('../models/User');
-const env = require('.../DB')
+const User = require('../models/User')
+const env = require('../DB')
 const jwt = require('jsonwebtoken')
 
 exports.register = function (req, res) {
-    const {
-      username,
-      email,
-      password,
-      passwordConfirmation
-    } = req.body
-    if (!email || !password) {
-      return res.status(422).json({
-        'error': 'Please provide email or password'
-      })
-    }
+  const { username, email, password, passwordConfirmation } = req.body
+  if (!email || !password) {
+    return res.status(422).json({ 'error': 'Please provide email or password' })
+  }
 
-    if (password != passwordConfirmation) {
-      return res.status(422).json({
-        'error': 'Password does not match'
-      })
+  if (password != passwordConfirmation) {
+    return res.status(422).json({ 'error': 'Password does not match' })
+  }
+  User.findOne({ email }, function (err, existingUser) {
+    if (err) {
+      return res.status(422).json({ 'error': 'Oops! Something went Wrong' })
     }
+    if (existingUser) {
+      return res.status(422).json({ 'error': 'User already exists' })
+    }
+    else {
+      const user = new User({
+        username, email, password
+      })
 
-    User.findOne({
-        email
-      }, function (err, exisistingUser) {
+      
+      user.save(function (err) {
+        console.log(err)
         if (err) {
           return res.status(422).json({
-            'error': 'Oops! Something went Wrong'
+            'error': 'Oops! Something went wrong on save'
           })
         }
-        if (existingUser) {
-          return res.status(422).json({
-            'error': 'User already exists'
-          })
-        } else {
-          const user = new User({
-            username,
-            email,
-            password
-          })
-
-          user.save(function (err) {
-            if (err) {
-              return res.status(422).json({
-                'error': 'Oops! Something went Wrong'
-              })
-            }
-            return res.status(200).json({
-              'registered': true
-            })
-          })
-        }
+        return res.status(200).json({ 'registered': true })
       })
     }
-    exports.login = function (req, res) {
-      const {
-        email,
-        password
-      } = req.body
+  })
+ }
+exports.login = function (req, res) { 
+  const { email, password } = req.body
 
-      if (!email || !password) {
-        return res.status(422).json({
-          'error': 'Please provide email or password'
-        })
-      }
-      User.findOne({
-        email
-      }, function (err, user) {
-        if (err) {
-          return res.status(422).json({
-            'error': 'Oops! Something went wrong'
-          })
-        }
-
-        if (!user) {
-          return res.status(422).json({
-            'error': 'Invalid user'
-          })
-        }
-
-        if (user.hasSamePassword(password)) {
-          json_token = jwt.sign({
-              userId: user.id,
-              username: user.username
-            },
-            env.secret, {
-              expiresIn: '1h'
-            })
-
-          return res.json(json_token)
-        } else {
-          return res.status(422).json({
-            'error': 'Wrong email or password'
-          })
-        }
+  if (!email || !password) {
+    return res.status(422).json({ 'error': 'Please provide email or password' })
+  }
+  User.findOne({ email }, function (err, user) {
+    if (err) {
+      return res.status(422).json({
+        'error': 'Oops! Something went wrong'
       })
-    return res.status(422).json({
-      'error': 'Password does not match'
-    })
+    }
+
+    if (!user) {
+      return res.status(422).json({ 'error': 'Invalid user' })
+    }
+
+    if (user.hasSamePassword(password)) {
+      json_token = jwt.sign(
+        {
+          userId: user.id,
+          username: user.username
+        },
+        env.secret,
+        { expiresIn: '1h' })
+
+      return res.json(json_token)
+    }
+    else {
+      return res.status(422).json({ 'error': 'Wrong email or password' })
+    }
+  })
 }
 
 exports.authMiddleware = function (req, res, next) {

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
@@ -30,7 +31,9 @@ const userSchema = new Schema({
 })
 
 userSchema.pre('save', function (next) {
-  const user = thisbcruypt.getSalt(10, function (err, salt) {
+  const user = this
+  bcrypt.genSalt(10, function (err, salt) {
+    console.log(salt, 'salt')
     if (err) {
       return res.status(422).json({
         'error': 'There is an error while gensalt hash'
@@ -43,10 +46,13 @@ userSchema.pre('save', function (next) {
         })
       }
       user.password = hash;
+      
       next();
     })
   })
+  console.log(user)
 })
+
 
 userSchema.methods.hasSamePassword = function (password) {
   return bcrypt.compareSync(password, this.password)
