@@ -5,6 +5,14 @@ const cors = require('cors')
 
 const app = express();
 
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json());
+
+let corsOptions = {
+    origin: 'http://localhost:4200',
+    optionsSuccessStatus: 200
+}
+
 app.get('/', function (req, res) {
     res.send('hello');
 })
