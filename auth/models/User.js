@@ -29,4 +29,23 @@ const userSchema = new Schema({
   }
 })
 
+userSchema.pre('save', function (next) {
+  const user = thisbcruypt.getSalt(10, function (err, salt) {
+    if (err) {
+      return res.status(422).json({
+        'error': 'There is an error while gensalt hash'
+      })
+    }
+    bcrypt.hash(user.password, salt, function (err, hash) {
+      if (err) {
+        return res.status(422).json({
+          'error': 'There is an error while password hash'
+        })
+      }
+      user.password = hash;
+      next();
+    })
+  })
+})
+
 module.exports = mongoose.model('User', userSchema)
